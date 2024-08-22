@@ -9,8 +9,7 @@ const String THINGSPEAK_CHANNEL_ID = '2626920';
 const String THINGSPEAK_READ_API_KEY = '374WR0W8MPADP3T9';
 
 Future<List<FlSpot>> fetchTemperatureData() async {
-  final url =
-      'https://api.thingspeak.com/channels/$THINGSPEAK_CHANNEL_ID/feeds.json?api_key=$THINGSPEAK_READ_API_KEY&results=1000';
+  final url = 'https://api.thingspeak.com/channels/$THINGSPEAK_CHANNEL_ID/feeds.json?api_key=$THINGSPEAK_READ_API_KEY&results=1000';
   final response = await http.get(Uri.parse(url));
 
   if (response.statusCode == 200) {
@@ -29,8 +28,7 @@ Future<List<FlSpot>> fetchTemperatureData() async {
         final oneDayAgo = now.subtract(Duration(days: 1));
 
         if (dateTime.isAfter(oneDayAgo)) {
-          spots.add(
-              FlSpot(dateTime.millisecondsSinceEpoch.toDouble(), temperature));
+          spots.add(FlSpot(dateTime.millisecondsSinceEpoch.toDouble(), temperature));
         }
       }
 
@@ -119,8 +117,7 @@ class _TemperatureGraphScreenState extends State<TemperatureGraphScreen> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: NetworkImage(
-                    'https://i.pinimg.com/originals/19/6e/17/196e178a5d70af3ed070249089c7506c.jpg'),
+                image: NetworkImage('https://i.pinimg.com/originals/19/6e/17/196e178a5d70af3ed070249089c7506c.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -138,8 +135,7 @@ class _TemperatureGraphScreenState extends State<TemperatureGraphScreen> {
             child: Card(
               elevation: 4.0,
               margin: EdgeInsets.all(16.0),
-              color: Colors
-                  .lightBlue[50], // Set the graph's background to light blue
+              color: Colors.lightBlue[50], // Set the graph's background to light blue
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: FutureBuilder<List<FlSpot>>(
@@ -166,8 +162,7 @@ class _TemperatureGraphScreenState extends State<TemperatureGraphScreen> {
                                   getTitlesWidget: (value, _) {
                                     return Text(
                                       formatTimestamp(value),
-                                      style: TextStyle(
-                                          color: Colors.black, fontSize: 10),
+                                      style: TextStyle(color: Colors.black, fontSize: 10),
                                     );
                                   },
                                 ),
@@ -179,16 +174,13 @@ class _TemperatureGraphScreenState extends State<TemperatureGraphScreen> {
                                   getTitlesWidget: (value, _) {
                                     return Text(
                                       '${value.toStringAsFixed(1)}°C',
-                                      style: TextStyle(
-                                          color: Colors.black, fontSize: 10),
+                                      style: TextStyle(color: Colors.black, fontSize: 10),
                                     );
                                   },
                                 ),
                               ),
-                              topTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false)),
-                              rightTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false)),
+                              topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                              rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                             ),
                             borderData: FlBorderData(
                               show: true,
@@ -208,12 +200,8 @@ class _TemperatureGraphScreenState extends State<TemperatureGraphScreen> {
                             ],
                             minX: spots.first.x,
                             maxX: spots.last.x,
-                            minY: spots
-                                .map((spot) => spot.y)
-                                .reduce((a, b) => a < b ? a : b),
-                            maxY: spots
-                                .map((spot) => spot.y)
-                                .reduce((a, b) => a > b ? a : b),
+                            minY: spots.map((spot) => spot.y).reduce((a, b) => a < b ? a : b),
+                            maxY: spots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b),
                           ),
                         ),
                       );

@@ -42,7 +42,9 @@ dependencies:
   intl: ^0.17.0
   audioplayers: 6.0.0
   shared_preferences: ^2.0.15
-  
+  permission_handler: ^11.3.1
+
+ 
 
 
 
@@ -52,6 +54,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
 
@@ -61,6 +64,11 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: assets/icon/Lnlogo.jpg
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -73,5 +81,6 @@ flutter:
     - assets/images/humidity_icon.png
     - assets/images/temperature_icon.png
     - assets/images/glitch-lazer-232465.mp3
+    - assets/icon/Lnlogo.jpg
 
   

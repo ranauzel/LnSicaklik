@@ -8,7 +8,6 @@ import 'package:audioplayers/audioplayers.dart'; // Ses çalmak için
 import 'login_screen.dart'; // Login ekranı
 import 'temperature_graph_screen.dart'; // Sıcaklık grafik ekranı
 import 'warning_screen.dart'; // Uyarı ekranı
-import 'room1.dart';
 import 'room2.dart';
 import 'package:permission_handler/permission_handler.dart'; // İzinler için
 
@@ -16,12 +15,12 @@ import 'package:permission_handler/permission_handler.dart'; // İzinler için
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-class TemperatureScreen extends StatefulWidget {
+class Room1Screen extends StatefulWidget {
   @override
-  _TemperatureScreenState createState() => _TemperatureScreenState();
+  _Room1ScreenState createState() => _Room1ScreenState();
 }
 
-class _TemperatureScreenState extends State<TemperatureScreen> {
+class _Room1ScreenState extends State<Room1Screen> {
   String temperature = '...'; // Başlangıç sıcaklık değeri
   final String apiUrl =
       'https://api.thingspeak.com/channels/2626920/fields/1/last.json?api_key=374WR0W8MPADP3T9';
@@ -37,6 +36,7 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
     _requestPermissions(); // Gerekli izinleri iste
     fetchTemperature(); // Widget oluşturulduğunda sıcaklığı çek
     fetchDailyData(); // Günlük verileri çek
+    Timer.periodic(Duration(minutes: 20), (Timer t) => fetchDailyData());
   }
 
   Future<void> _requestPermissions() async {
@@ -89,7 +89,6 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
         final now = DateTime.now();
         final twoDaysAgo = now.subtract(Duration(days: 2));
 
-        // Günlük verileri filtrele ve sırala
         setState(() {
           dailyData = data['feeds'].where((data) {
             final dateTime = DateTime.parse(data['created_at']);
@@ -154,13 +153,7 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
     );
   }
 
-  void _showroom1() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => Room1Screen()),
-    );
-  }
-
-  void _showroom2() {
+  void _showRoom2() {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => Room2Screen()),
     );
@@ -175,7 +168,7 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
     return Scaffold(
       backgroundColor: darkBlue, // Arka plan rengini koyu mavi yaptık
       appBar: AppBar(
-        title: Text('Sıcaklık Verisi',
+        title: Text('1. Sunucu Odası Sıcaklık Verisi',
             style:
                 TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.bold)),
         backgroundColor: darkerBlue,
@@ -198,13 +191,8 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
             ),
             ListTile(
               leading: Icon(Icons.router),
-              title: Text('1.Sunucu Odası'),
-              onTap: _showroom1,
-            ),
-            ListTile(
-              leading: Icon(Icons.router),
               title: Text('2. Sunucu Odası'),
-              onTap: _showroom2,
+              onTap: _showRoom2,
             ),
             ListTile(
               leading: Icon(Icons.exit_to_app),

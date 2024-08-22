@@ -5,29 +5,25 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Bildirimler için
 import 'package:audioplayers/audioplayers.dart'; // Ses çalmak için
-import 'login_screen.dart'; // Login ekranı
-import 'temperature_graph_screen.dart'; // Sıcaklık grafik ekranı
 import 'warning_screen.dart'; // Uyarı ekranı
+import 'login_screen.dart'; // Login ekranı
 import 'room1.dart';
-import 'room2.dart';
+import 'temperature_graph_screen.dart'; // Sıcaklık grafik ekranı
 import 'package:permission_handler/permission_handler.dart'; // İzinler için
 
 // Global notification plugin
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-class TemperatureScreen extends StatefulWidget {
+class Room2Screen extends StatefulWidget {
   @override
-  _TemperatureScreenState createState() => _TemperatureScreenState();
+  _Room2ScreenState createState() => _Room2ScreenState();
 }
 
-class _TemperatureScreenState extends State<TemperatureScreen> {
+class _Room2ScreenState extends State<Room2Screen> {
   String temperature = '...'; // Başlangıç sıcaklık değeri
   final String apiUrl =
-      'https://api.thingspeak.com/channels/2626920/fields/1/last.json?api_key=374WR0W8MPADP3T9';
-  final String dailyDataUrl =
-      'https://api.thingspeak.com/channels/2626920/feeds.json?api_key=374WR0W8MPADP3T9&results=100';
-  List<dynamic> dailyData = []; // Günlük veriler için liste
+      'https://api.thingspeak.com/channels/2626921/fields/1/last.json?api_key=YOUR_API_KEY';
   final AudioPlayer _audioPlayer = AudioPlayer(); // Ses çalar
 
   @override
@@ -36,7 +32,6 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
     _initializeNotification(); // Bildirimleri başlat
     _requestPermissions(); // Gerekli izinleri iste
     fetchTemperature(); // Widget oluşturulduğunda sıcaklığı çek
-    fetchDailyData(); // Günlük verileri çek
   }
 
   Future<void> _requestPermissions() async {
@@ -81,37 +76,9 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
     }
   }
 
-  Future<void> fetchDailyData() async {
-    try {
-      final response = await http.get(Uri.parse(dailyDataUrl));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final now = DateTime.now();
-        final twoDaysAgo = now.subtract(Duration(days: 2));
-
-        // Günlük verileri filtrele ve sırala
-        setState(() {
-          dailyData = data['feeds'].where((data) {
-            final dateTime = DateTime.parse(data['created_at']);
-            return dateTime.isAfter(twoDaysAgo);
-          }).toList()
-            ..sort((a, b) => DateTime.parse(b['created_at']).compareTo(
-                DateTime.parse(
-                    a['created_at']))); // Son veriden ilk veriye sıralama
-        });
-      } else {
-        throw Exception('Günlük veriler yüklenemedi');
-      }
-    } catch (e) {
-      setState(() {
-        dailyData = []; // Hata durumunda listeyi boş bırak
-      });
-    }
-  }
-
   void _playWarningSound() async {
-    await _audioPlayer.play(AssetSource(
-        'assets/images/glitch-lazer-232465.mp3')); // Ses dosyasını çal
+    await _audioPlayer.play(
+        AssetSource('assets/glitch-lazer-232465.mp3')); // Ses dosyasını çal
   }
 
   Future<void> _showNotification(String title, String body) async {
@@ -154,18 +121,6 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
     );
   }
 
-  void _showroom1() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => Room1Screen()),
-    );
-  }
-
-  void _showroom2() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => Room2Screen()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final Color darkBlue = Colors.blue[800]!; // Daha koyu mavi
@@ -175,7 +130,7 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
     return Scaffold(
       backgroundColor: darkBlue, // Arka plan rengini koyu mavi yaptık
       appBar: AppBar(
-        title: Text('Sıcaklık Verisi',
+        title: Text('2. Sunucu Odası Sıcaklık',
             style:
                 TextStyle(fontFamily: 'Roboto', fontWeight: FontWeight.bold)),
         backgroundColor: darkerBlue,
@@ -198,13 +153,12 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
             ),
             ListTile(
               leading: Icon(Icons.router),
-              title: Text('1.Sunucu Odası'),
-              onTap: _showroom1,
-            ),
-            ListTile(
-              leading: Icon(Icons.router),
-              title: Text('2. Sunucu Odası'),
-              onTap: _showroom2,
+              title: Text('1. Sunucu Odası'),
+              onTap: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) => Room1Screen()),
+                );
+              },
             ),
             ListTile(
               leading: Icon(Icons.exit_to_app),
@@ -249,88 +203,35 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
               height: 50, // Logo yüksekliği
             ),
           ),
-          Column(
-            children: [
-              SizedBox(
-                  height:
-                      130), // Üst boşluğu oluşturur ve sıcaklık bilgisini ortalar
-              Card(
-                color: lightBlue.withOpacity(0.9), // Kart rengi
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'Sıcaklık: $temperature',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontFamily: 'Roboto',
-                    ),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                    height:
+                        130), // Üst boşluğu oluşturur ve sıcaklık bilgisini ortalar
+                Card(
+                  color: lightBlue.withOpacity(0.9), // Kart rengi
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
                   ),
-                ),
-              ),
-              SizedBox(height: 20), // Sıcaklık ve butonlar arasında mesafe
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: _showGraph,
-                    icon: Icon(Icons.bar_chart),
-                    label: Text('Grafik'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: lightBlue,
-                      textStyle: TextStyle(fontSize: 20),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 20), // Butonlar ve tablo arasında mesafe
-              Expanded(
-                child: dailyData.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Veri yok',
-                          style: TextStyle(fontSize: 18, color: Colors.white),
-                        ),
-                      )
-                    : SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: Container(
-                          padding: EdgeInsets.all(16.0),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: DataTable(
-                            columns: [
-                              DataColumn(
-                                  label: Text('Tarih ve Saat',
-                                      style: TextStyle(color: Colors.white))),
-                              DataColumn(
-                                  label: Text('Sıcaklık',
-                                      style: TextStyle(color: Colors.white))),
-                            ],
-                            rows: dailyData.map((data) {
-                              final dateTime =
-                                  DateTime.parse(data['created_at']);
-                              final formattedDate =
-                                  '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
-                              return DataRow(cells: [
-                                DataCell(Text(formattedDate,
-                                    style: TextStyle(color: Colors.white))),
-                                DataCell(Text(data['field1'],
-                                    style: TextStyle(color: Colors.white))),
-                              ]);
-                            }).toList(),
-                          ),
-                        ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Sıcaklık: $temperature',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontFamily: 'Roboto',
                       ),
-              ),
-            ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20), // Sıcaklık ve butonlar arasında mesafe
+              ],
+            ),
           ),
         ],
       ),
