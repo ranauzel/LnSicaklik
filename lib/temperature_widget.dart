@@ -11,6 +11,7 @@ import 'warning_screen.dart'; // Uyarı ekranı
 import 'room1.dart';
 import 'room2.dart';
 import 'package:permission_handler/permission_handler.dart'; // İzinler için
+import 'package:intl/intl.dart';
 
 // Global notification plugin
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -86,18 +87,26 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
       final response = await http.get(Uri.parse(dailyDataUrl));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final now = DateTime.now();
-        final twoDaysAgo = now.subtract(Duration(days: 2));
 
-        // Günlük verileri filtrele ve sırala
         setState(() {
-          dailyData = data['feeds'].where((data) {
-            final dateTime = DateTime.parse(data['created_at']);
-            return dateTime.isAfter(twoDaysAgo);
+          final now = DateTime.now();
+          final oneDayAgo = now.subtract(Duration(days: 1));
+
+          // API'den gelen 'feeds' verisini çekiyoruz
+          final List<dynamic> feeds = data['feeds'];
+
+          // Günlük verileri filtrele ve sırala
+          dailyData = feeds.where((feed) {
+            final dateTime = DateTime.parse(feed['created_at']);
+            // Son 24 saat içindeki verileri filtrele
+            return dateTime.isAfter(oneDayAgo);
           }).toList()
-            ..sort((a, b) => DateTime.parse(b['created_at']).compareTo(
-                DateTime.parse(
-                    a['created_at']))); // Son veriden ilk veriye sıralama
+            ..sort((a, b) {
+              final dateTimeA = DateTime.parse(a['created_at']);
+              final dateTimeB = DateTime.parse(b['created_at']);
+              // Verileri en son tarihten en eskiye doğru sırala
+              return dateTimeB.compareTo(dateTimeA);
+            });
         });
       } else {
         throw Exception('Günlük veriler yüklenemedi');
@@ -315,14 +324,14 @@ class _TemperatureScreenState extends State<TemperatureScreen> {
                                       style: TextStyle(color: Colors.white))),
                             ],
                             rows: dailyData.map((data) {
-                              final dateTime =
-                                  DateTime.parse(data['created_at']);
-                              final formattedDate =
-                                  '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}:${dateTime.second}';
+                              // API'den gelen 'created_at' verisini doğrudan alıyoruz
+                              final String createdAt = data['created_at'];
+
+                              // Zaman damgasını olduğu gibi tabloya yazdırıyoruz
                               return DataRow(cells: [
-                                DataCell(Text(formattedDate,
+                                DataCell(Text(createdAt,
                                     style: TextStyle(color: Colors.white))),
-                                DataCell(Text(data['field1'],
+                                DataCell(Text('${data['field1']}°C',
                                     style: TextStyle(color: Colors.white))),
                               ]);
                             }).toList(),
